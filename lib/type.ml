@@ -216,6 +216,10 @@ let rec of_absform = function
      of_elem TyAtom
   | F.TyPredef {name="number"; args=[]; _} ->
      of_elem TyNumber
+  | F.TyPredef {name="non_neg_integer"; args=[]; _}
+  | F.TyPredef {name="pos_integer"; args=[]; _}
+  | F.TyPredef {name="neg_integer"; args=[]; _} ->
+     of_elem TyNumber
   | F.TyPredef {name="boolean"; args=[]; _} ->
      bool
   | F.TyVar {id; _} -> of_elem (TyVar (Type_variable.of_string id))
