@@ -9,6 +9,7 @@ type t =
     | TyBottom
  and t_union_elem =
     | TyNumber
+    | TyPid
     | TyAtom
     | TySingleton of Constant.t
     | TyVar of Type_variable.t
@@ -26,6 +27,7 @@ let rec pp = function
   | TyBottom -> "none()"
 and pp_t_union_elem = function
   | TyNumber -> "number()"
+  | TyPid -> "pid()"
   | TyAtom -> "atom()"
   | TySingleton c -> Constant.pp c
   | TyVar var -> Type_variable.to_string var
@@ -48,6 +50,7 @@ let rec variables = function
 and variables_elem = function
   | TyNumber
   | TyAtom
+  | TyPid
   | TySingleton _
   | TyAnyMap -> []
   | TyList t ->
@@ -89,6 +92,8 @@ and sup_elems_to_list store = function
      let is_not_atom = function TySingleton (Atom _) -> false | _ -> true in
      let store' = TyAtom :: List.filter ~f:is_not_atom store in
      sup_elems_to_list store' ty1s
+  | TyPid :: ty1s ->
+      failwith "sup_elems_of_list; remains to be implemented"  (* FIXME *)
   | TySingleton (Atom a) :: ty1s when List.exists ~f:((=) TyAtom) store ->
      sup_elems_to_list store ty1s
   | TySingleton (Atom a) :: ty1s ->
@@ -197,6 +202,7 @@ and subst_elem (v, ty0) = function
      TyUnion [TyFun (List.map ~f:(subst (v,ty0)) tys, subst (v,ty0) ty)]
   | TyNumber -> TyUnion [TyNumber]
   | TyAtom -> TyUnion [TyAtom]
+  | TyPid -> TyUnion  [TyPid]
   | TySingleton const -> TyUnion [TySingleton const]
   | TyVar x when x = v ->
      ty0
