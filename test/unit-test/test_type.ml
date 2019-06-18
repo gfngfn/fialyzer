@@ -68,6 +68,11 @@ let%expect_test "inf" =
   print TyBottom TyAny;
   [%expect {| TyBottom |}];
 
+  print (TyUnion [TyNumber; TyAtom]) (TyUnion [TyNumber]);
+  [%expect {|
+    (TyUnion (TyNumber))
+  |}];
+
   print (of_elem (TySingleton (Number (Int 1)))) (of_elem (TySingleton (Number (Int 2))));
   [%expect {| TyBottom |}];
 
@@ -98,6 +103,16 @@ let%expect_test "sup" =
 
   print TyBottom TyAny;
   [%expect {| TyAny |}];
+
+  print (TyUnion [TyNumber; TyAtom]) (TyUnion [TyNumber; TyAnyMap]);
+  [%expect {|
+    (TyUnion (TyAtom TyNumber TyAnyMap))
+  |}];
+
+  print (TyUnion [TyPid; TyAtom]) (TyUnion [TyPid; TyAnyMap]);
+  [%expect {|
+    (TyUnion (TyAtom TyPid TyAnyMap))
+  |}];
 
   print (of_elem (TySingleton (Number (Int 1)))) (of_elem (TySingleton (Number (Int 2))));
   [%expect {|
