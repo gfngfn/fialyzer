@@ -80,6 +80,7 @@ and sup_elems_to_list store = function
     sup_elems_to_list ((TyVar v1) :: store) ty1s
   | ty1 :: ty1s when List.exists ~f:((=) ty1) store ->
      sup_elems_to_list store ty1s
+       (* omits duplication *)
   | TyNumber :: ty1s ->
      let is_not_number = function TySingleton (Number _) -> false | _ -> true in
      let store' = TyNumber :: List.filter ~f:is_not_number store in
@@ -93,7 +94,9 @@ and sup_elems_to_list store = function
      let store' = TyAtom :: List.filter ~f:is_not_atom store in
      sup_elems_to_list store' ty1s
   | TyPid :: ty1s ->
-      failwith "sup_elems_of_list; remains to be implemented"  (* FIXME *)
+      let store' = TyPid :: store in
+        (* does not need to omit duplication of `TyPid` here *)
+      sup_elems_to_list store' ty1s
   | TySingleton (Atom a) :: ty1s when List.exists ~f:((=) TyAtom) store ->
      sup_elems_to_list store ty1s
   | TySingleton (Atom a) :: ty1s ->
@@ -138,6 +141,7 @@ and sup_elems_to_list store = function
   | TyAnyMap :: ty1s ->
      let is_not_any_map = function TyAnyMap -> false | _ -> true in
      let store' = TyAnyMap :: List.filter ~f:is_not_any_map store in
+       (* actually it seems unnecessary to omit duplication of `TyAnyMap` here *)
      sup_elems_to_list store' ty1s
 
 let union_list tys =
