@@ -10,6 +10,7 @@ type t =
  and t_union_elem =
     | TyNumber
     | TyPid
+    | TyPort
     | TyAtom
     | TySingleton of Constant.t
     | TyVar of Type_variable.t
@@ -28,6 +29,7 @@ let rec pp = function
 and pp_t_union_elem = function
   | TyNumber -> "number()"
   | TyPid -> "pid()"
+  | TyPort -> "port()"
   | TyAtom -> "atom()"
   | TySingleton c -> Constant.pp c
   | TyVar var -> Type_variable.to_string var
@@ -51,6 +53,7 @@ and variables_elem = function
   | TyNumber
   | TyAtom
   | TyPid
+  | TyPort
   | TySingleton _
   | TyAnyMap -> []
   | TyList t ->
@@ -93,9 +96,9 @@ and sup_elems_to_list store = function
      let is_not_atom = function TySingleton (Atom _) -> false | _ -> true in
      let store' = TyAtom :: List.filter ~f:is_not_atom store in
      sup_elems_to_list store' ty1s
-  | TyPid :: ty1s ->
-      let store' = TyPid :: store in
-        (* does not need to omit duplication of `TyPid` here *)
+  | ((TyPid | TyPort) as ty) :: ty1s ->
+      let store' = ty :: store in
+        (* does not need to omit duplication of `TyPid` or `TyPort` here *)
       sup_elems_to_list store' ty1s
   | TySingleton (Atom a) :: ty1s when List.exists ~f:((=) TyAtom) store ->
      sup_elems_to_list store ty1s
@@ -206,7 +209,7 @@ and subst_elem (v, ty0) = function
      TyUnion [TyFun (List.map ~f:(subst (v,ty0)) tys, subst (v,ty0) ty)]
   | TyNumber -> TyUnion [TyNumber]
   | TyAtom -> TyUnion [TyAtom]
-  | TyPid -> TyUnion  [TyPid]
+  | (TyPid | TyPort) as ty -> TyUnion  [ty]
   | TySingleton const -> TyUnion [TySingleton const]
   | TyVar x when x = v ->
      ty0
